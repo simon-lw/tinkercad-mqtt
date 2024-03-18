@@ -1,0 +1,42 @@
+{
+  "name": "tinkercad-mqtt",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": "20.11.1"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:chrome && npm run build:firefox",
+    "build:chrome": "export TARGET=chrome && tsc && vite build",
+    "build:firefox": "export TARGET=firefox && tsc && vite build && npx web-ext build -s dist/firefox -a dist/firefox -o",
+    "lint": "eslint -c .eslintrc.json .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.12",
+    "@mui/icons-material": "^5.15.13",
+    "@mui/material": "^5.15.13",
+    "@types/webextension-polyfill": "^0.10.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "2.0.0-beta.23",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.21",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6",
+    "web-ext": "^7.11.0",
+    "webextension-polyfill": "^0.10.0"
+  }
+}
