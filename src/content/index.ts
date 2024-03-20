@@ -4,11 +4,11 @@ let serial_output: HTMLDivElement;
 let serial_input: HTMLInputElement;
 let serial_send: HTMLAnchorElement;
 
-let port_mqtt_send = browser.runtime.connect({ name: 'mqtt_send' });
-let send_port_connected = true;
+let mqtt_port = browser.runtime.connect({ name: 'mqtt_send' });
+let port_connected = true;
 
-port_mqtt_send.onDisconnect.addListener(() => {
-  send_port_connected = false;
+mqtt_port.onDisconnect.addListener(() => {
+  port_connected = false;
 });
 
 const observer = new MutationObserver(() => {
@@ -25,8 +25,8 @@ const observer = new MutationObserver(() => {
   let last_serial_data = serial_data[serial_data.length - 2];
 
   console.log(last_serial_data);
-  if (send_port_connected) {
-    port_mqtt_send.postMessage(last_serial_data); // TODO: decide on a message format
+  if (port_connected) {
+    mqtt_port.postMessage(last_serial_data); // TODO: decide on a message format
   }
 });
 
