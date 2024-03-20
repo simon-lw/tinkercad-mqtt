@@ -21,6 +21,7 @@
     "@mui/icons-material": "^5.15.13",
     "@mui/material": "^5.15.13",
     "@types/webextension-polyfill": "^0.10.7",
+    "mqtt": "^5.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

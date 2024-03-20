@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./App.css";
+import browser from "webextension-polyfill";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -16,7 +17,10 @@ function App() {
       <div className="card">
         <Button
           variant="contained"
-          onClick={() => setCount((count) => count + 1)}
+          onClick={() => {
+            setCount((count) => count + 1)
+            browser.runtime.sendMessage({ action: 'publishToMQTT', topic: 'presence', content: count })
+          }}
         >
           count is {count}
         </Button>
