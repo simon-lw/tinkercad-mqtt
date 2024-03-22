@@ -43,5 +43,6 @@ export default defineManifest(async () => {
         ],
       },
     ],
+    host_permissions: ['<all_urls>'],
   };
 });

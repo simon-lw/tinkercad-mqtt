@@ -4,8 +4,16 @@ let serial_output: HTMLDivElement;
 let serial_input: HTMLInputElement;
 let serial_send: HTMLAnchorElement;
 
-let mqtt_port = browser.runtime.connect({ name: 'mqtt_send' });
+let mqtt_port = browser.runtime.connect({ name: 'mqtt' });
 let port_connected = true;
+
+mqtt_port.onMessage.addListener((msg) => {
+  console.log('Received message from background', msg);
+  if (serial_input && serial_send) {
+    serial_input.value = msg;
+    serial_send.click();
+  }
+});
 
 mqtt_port.onDisconnect.addListener(() => {
   port_connected = false;
@@ -61,15 +69,3 @@ let interval = setInterval(() => {
 function stopInterval() {
   clearInterval(interval);
 }
-
-browser.runtime.onConnect.addListener((port) => {
-  if (port.name === 'mqtt_receive') {
-    port.onMessage.addListener((msg) => {
-      console.log('Received message from background', msg);
-      if (serial_input && serial_send) {
-        serial_input.value = msg;
-        serial_send.click();
-      }
-    });
-  }
-});
