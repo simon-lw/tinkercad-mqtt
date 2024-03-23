@@ -8,13 +8,9 @@ let serial_graph_toggle: HTMLAnchorElement;
 
 // recreate the serial output element to redirect the output
 let new_serial_output = createNewSerialOutput();
-
 let new_serial_send = createNewSerialSend();
-
 let new_serial_clear = createNewSerialClear();
-
 let new_serial_input = createNewSerialInput();
-// TODO: recreate the serial input, clear, and send elements
 
 let serial_output_content = '';
 let serial_output_content_max_length = 2500;
