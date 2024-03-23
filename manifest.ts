@@ -43,6 +43,9 @@ export default defineManifest(async () => {
         ],
       },
     ],
-    host_permissions: ['<all_urls>'],
+    host_permissions: [
+      'https://www.tinkercad.com/things/*',
+      'http://www.tinkercad.com/things/*',
+    ],
   };
 });
