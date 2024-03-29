@@ -18,6 +18,8 @@ export class Serial {
   private serial_output_content: string;
   private max_length: number;
 
+  private last_element_buffer: string;
+
   private constructor() {
     this.new_serial_output = this.createSerialOutput();
     this.new_serial_send = this.createSerialSend();
@@ -27,6 +29,7 @@ export class Serial {
     this.callbacks = [];
     this.serial_output_content = '';
     this.max_length = 2500;
+    this.last_element_buffer = '';
 
     this.observer = new MutationObserver(() => {
       let text = this.serial_output?.textContent;
@@ -49,7 +52,16 @@ export class Serial {
       this.new_serial_output.textContent = this.serial_output_content;
 
       // split the serial output by new line and remove empty strings
-      let serial_data = text.split(/[\r\n]+/g).filter((s) => s !== '');
+      let serial_data_split = text.split(/[\r\n]+/g);
+
+      if (serial_data_split.length > 1) {
+        serial_data_split[0] = this.last_element_buffer + serial_data_split[0];
+      }
+
+      this.last_element_buffer = serial_data_split.pop() || '';
+
+      let serial_data = serial_data_split.filter((s) => s !== '');
+      console.log(serial_data);
 
       for (let callback of this.callbacks) {
         callback(serial_data);
