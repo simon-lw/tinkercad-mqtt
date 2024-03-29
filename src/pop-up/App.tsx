@@ -13,8 +13,8 @@ import { BACKGROUND_ACTION } from '../content';
 function App() {
   const [count, setCount] = useState(0);
   const [topicValue, setTopicValue] = useState('');
-  
-  const handleTextFieldChange = (event : ChangeEvent<HTMLInputElement>) => {
+
+  const handleTextFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTopicValue(event.target.value);
   };
 
@@ -22,13 +22,29 @@ function App() {
     <>
       <h1>Tinkercad MQTT</h1>
       <div className="topic-input">
-        <TextField style={{color: 'white'}} placeholder="Enter Topic to subscribe" variant="outlined" onChange={handleTextFieldChange}/>
-        <Button variant="contained" onClick={() => {
-          browser.runtime.sendMessage({
-            action: BACKGROUND_ACTION.MQTT_SUBSCRIBE,
-            content: topicValue
-          })
-        }}>Subscribe Topic</Button>
+        <TextField
+          style={{ color: 'white' }}
+          placeholder="Enter Topic to subscribe"
+          variant="outlined"
+          onChange={handleTextFieldChange}
+        />
+        <Button
+          variant="contained"
+          onClick={() => {
+            browser.tabs.getCurrent().then((tab) => {
+              let tabId = tab?.id;
+
+              if (tabId) {
+                browser.tabs.sendMessage(tabId, {
+                  action: BACKGROUND_ACTION.MQTT_SUBSCRIBE,
+                  content: topicValue,
+                });
+              }
+            });
+          }}
+        >
+          Subscribe Topic
+        </Button>
       </div>
       <div className="card">
         <Button
