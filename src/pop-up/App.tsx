@@ -8,7 +8,7 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { BACKGROUND_ACTION } from '../background';
+import { BACKGROUND_ACTION } from '../content';
 
 function App() {
   const [count, setCount] = useState(0);

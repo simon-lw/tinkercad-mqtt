@@ -11,18 +11,6 @@ export default defineManifest(async () => {
     // split into version parts
     .split(/[.-]/);
 
-  // Since Firefox does not support the full ManifestV3 spec,
-  // we need to use different properties for the background script
-  let background = {
-    type: 'module',
-    ...(process.env.TARGET === 'chrome' && {
-      service_worker: 'src/background/index.ts',
-    }),
-    ...(process.env.TARGET === 'firefox' && {
-      scripts: ['src/background/index.ts'],
-    }),
-  };
-
   return {
     manifest_version: 3,
     name: 'Tinkercad MQTT',
@@ -32,7 +20,6 @@ export default defineManifest(async () => {
     action: {
       default_popup: 'index.html',
     },
-    background,
     permissions: ['activeTab', 'tabs', 'storage'],
     content_scripts: [
       {
