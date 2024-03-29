@@ -31,16 +31,19 @@ function App() {
         <Button
           variant="contained"
           onClick={() => {
-            browser.tabs.getCurrent().then((tab) => {
-              let tabId = tab?.id;
+            browser.tabs
+              .query({ active: true, currentWindow: true })
+              .then((tabs) => {
+                let tab = tabs[0];
+                let tabId = tab.id;
 
-              if (tabId) {
-                browser.tabs.sendMessage(tabId, {
-                  action: BACKGROUND_ACTION.MQTT_SUBSCRIBE,
-                  content: topicValue,
-                });
-              }
-            });
+                if (tabId) {
+                  browser.tabs.sendMessage(tabId, {
+                    action: BACKGROUND_ACTION.MQTT_SUBSCRIBE,
+                    content: topicValue,
+                  });
+                }
+              });
           }}
         >
           Subscribe Topic
