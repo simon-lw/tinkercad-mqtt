@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import './App.css';
 import browser from 'webextension-polyfill';
 
@@ -8,21 +8,27 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { BACKGROUND_ACTION } from '../background';
 
 function App() {
   const [count, setCount] = useState(0);
-  let topicValue = "";
+  const [topicValue, setTopicValue] = useState('');
+  
+  const handleTextFieldChange = (event : ChangeEvent<HTMLInputElement>) => {
+    setTopicValue(event.target.value);
+  };
+
   return (
     <>
       <h1>Tinkercad MQTT</h1>
       <div className="topic-input">
-        <TextField placeholder="Enter Topic to subscribe" variant="outlined" onChange={(event) => { topicValue = event.target.value;}}/>
+        <TextField style={{color: 'white'}} placeholder="Enter Topic to subscribe" variant="outlined" onChange={handleTextFieldChange}/>
         <Button variant="contained" onClick={() => {
           browser.runtime.sendMessage({
-            action: 'subscribeTopic',
+            action: BACKGROUND_ACTION.MQTT_SUBSCRIBE,
             content: topicValue
           })
-        }}>Create Topic</Button>
+        }}>Subscribe Topic</Button>
       </div>
       <div className="card">
         <Button
@@ -30,8 +36,8 @@ function App() {
           onClick={() => {
             setCount((count) => count + 1);
             browser.runtime.sendMessage({
-              action: 'publishMessage',
-              topic: 'presence',
+              action: BACKGROUND_ACTION.MQTT_PUBLISH,
+              topic: topicValue,
               content: count,
             });
           }}

@@ -1,11 +1,17 @@
 import browser from 'webextension-polyfill';
 import mqtt, { MqttClient } from 'mqtt';
 
+export enum BACKGROUND_ACTION {
+  MQTT_PUBLISH,
+  MQTT_SUBSCRIBE,
+}
+
 const brokerUrl = 'ws://localhost';
 const options: mqtt.IClientOptions = {
   port: 9001,
   reconnectPeriod: 5000,
-  clientId: 'tinkerExtension-sub',
+  keepalive: 60,
+  //clientId: 'tinkerExtension-sub',
 };
 
 let client: MqttClient;
@@ -13,6 +19,9 @@ let client: MqttClient;
 browser.runtime.onConnect.addListener((port) => {
   console.log('CONNECTED from: ', port.sender?.tab?.id);
   client = mqtt.connect(brokerUrl, options);
+  client.on('error', (error) => {
+    console.error('Mqtt client error:', error);
+  });
 
   port.onMessage.addListener((msg) => {
     console.log('Message via port:', msg);
@@ -22,15 +31,17 @@ browser.runtime.onConnect.addListener((port) => {
 });
 
 browser.runtime.onMessage.addListener((msg) => {
-  //TODO: Check if client is available
-  if (msg.action === 'publishMessage') {
-    console.log('PUBLISHING', msg);
-    client.publish(msg.topic, msg.content);
-  } else if (msg.action === 'subscribeTopic') {
-    console.log('SUBSCRIBING to', msg.content);
-    //createTopicSubscriber(brokerUrl, subTopic); //TODO: Subscription has to be long lasting, whci his currently not the case
-    client.subscribe(msg.content, (error) => {
-      if (error) console.log('Failed subscribing.');
-    });
+  if (client.connected) {
+    if (msg.action == BACKGROUND_ACTION.MQTT_PUBLISH) {
+      console.log('PUBLISHING', msg);
+      client.publish(msg.topic, String(msg.content));
+    } else if (msg.action == BACKGROUND_ACTION.MQTT_SUBSCRIBE) {
+      console.log('SUBSCRIBING', msg.content);
+      client.subscribe(msg.content, (error) => {
+        if (error) console.log('Failed subscribing.');
+      });
+    }
+  } else {
+    console.log('Client is not connected yet, skipping message.');
   }
 });
