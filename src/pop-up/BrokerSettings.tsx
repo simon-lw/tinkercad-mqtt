@@ -22,6 +22,13 @@ import {
 interface BrokerSettingsProps {
   disabled: boolean;
   authenticationEnabled: boolean;
+  brokerUrl: string;
+  topic: string;
+  username: string;
+  onAuthenticationEnabledChange: (enabled: boolean) => void;
+  onBrokerUrlChange: (brokerUrl: string) => void;
+  onTopicChange: (topic: string) => void;
+  onUsernameChange: (username: string) => void;
 }
 
 function BrokerSettings(props: BrokerSettingsProps) {
@@ -33,7 +40,22 @@ function BrokerSettings(props: BrokerSettingsProps) {
   const handleAuthenticationEnabledChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    props.onAuthenticationEnabledChange(event.target.checked);
     setAuthenticationEnabled(event.target.checked);
+  };
+
+  const handleBrokerUrlChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    props.onBrokerUrlChange(event.target.value);
+  };
+
+  const handleTopicChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.onTopicChange(event.target.value);
+  };
+
+  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.onUsernameChange(event.target.value);
   };
 
   return (
@@ -47,6 +69,17 @@ function BrokerSettings(props: BrokerSettingsProps) {
             variant="outlined"
             size="small"
             disabled={disabled}
+            onChange={handleBrokerUrlChange}
+            value={props.brokerUrl}
+          />
+          <TextField
+            fullWidth
+            label="Topic"
+            variant="outlined"
+            size="small"
+            disabled={disabled}
+            onChange={handleTopicChange}
+            value={props.topic}
           />
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -63,6 +96,7 @@ function BrokerSettings(props: BrokerSettingsProps) {
                       onChange={handleAuthenticationEnabledChange}
                       size="small"
                       disabled={disabled}
+                      checked={authenticationEnabled}
                     />
                   </Grid>
                 </Grid>
@@ -72,6 +106,8 @@ function BrokerSettings(props: BrokerSettingsProps) {
                   variant="outlined"
                   size="small"
                   disabled={!authenticationEnabled || disabled}
+                  onChange={handleUsernameChange}
+                  value={props.username}
                 />
                 <TextField
                   fullWidth
