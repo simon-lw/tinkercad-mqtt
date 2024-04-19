@@ -19,14 +19,15 @@ import {
   Typography,
 } from '@mui/material';
 
-interface MqttConfiguratorProps {
+interface BrokerSettingsProps {
+  disabled: boolean;
   authenticationEnabled: boolean;
 }
 
-function MqttConfigurator(props: MqttConfiguratorProps) {
-  const propAuthenticationEnabled = props.authenticationEnabled;
+function BrokerSettings(props: BrokerSettingsProps) {
+  const disabled = props.disabled;
   const [authenticationEnabled, setAuthenticationEnabled] = useState(
-    propAuthenticationEnabled
+    props.authenticationEnabled
   );
 
   const handleAuthenticationEnabledChange = (
@@ -45,6 +46,7 @@ function MqttConfigurator(props: MqttConfiguratorProps) {
             placeholder="ws://localhost:9001"
             variant="outlined"
             size="small"
+            disabled={disabled}
           />
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -52,12 +54,16 @@ function MqttConfigurator(props: MqttConfiguratorProps) {
             </AccordionSummary>
             <AccordionDetails>
               <Stack spacing={1}>
-                <Grid container>
+                <Grid container alignItems="center">
                   <Grid item xs={10}>
                     <Typography>Use Authentication</Typography>
                   </Grid>
                   <Grid item xs={2}>
-                    <Checkbox onChange={handleAuthenticationEnabledChange} />
+                    <Checkbox
+                      onChange={handleAuthenticationEnabledChange}
+                      size="small"
+                      disabled={disabled}
+                    />
                   </Grid>
                 </Grid>
                 <TextField
@@ -65,7 +71,7 @@ function MqttConfigurator(props: MqttConfiguratorProps) {
                   label="Username"
                   variant="outlined"
                   size="small"
-                  disabled={!authenticationEnabled}
+                  disabled={!authenticationEnabled || disabled}
                 />
                 <TextField
                   fullWidth
@@ -73,7 +79,7 @@ function MqttConfigurator(props: MqttConfiguratorProps) {
                   variant="outlined"
                   size="small"
                   type="password"
-                  disabled={!authenticationEnabled}
+                  disabled={!authenticationEnabled || disabled}
                 />
               </Stack>
             </AccordionDetails>
@@ -84,4 +90,4 @@ function MqttConfigurator(props: MqttConfiguratorProps) {
   );
 }
 
-export default MqttConfigurator;
+export default BrokerSettings;

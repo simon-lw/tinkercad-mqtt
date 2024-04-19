@@ -17,9 +17,10 @@ import {
   Divider,
   Grid,
   Stack,
+  Switch,
   Typography,
 } from '@mui/material';
-import MqttConfigurator from './MqttConfigurator';
+import BrokerSettings from './BrokerSettings';
 
 const isDarkMode =
   window.matchMedia &&
@@ -31,8 +32,10 @@ const theme = createTheme({
 });
 
 function App() {
-  const [count, setCount] = useState(0);
   const [topicValue, setTopicValue] = useState('');
+
+  const [subscribeEnabled, setSubscribeEnabled] = useState(false);
+  const [publishEnabled, setPublishEnabled] = useState(false);
 
   const handleTextFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTopicValue(event.target.value);
@@ -42,7 +45,7 @@ function App() {
     <>
       <ThemeProvider theme={theme}>
         <CssBaseline enableColorScheme />
-        <Container sx={{ margin: '1em', width: '600px', height: '430px' }}>
+        <Container sx={{ margin: '1em', width: 'max-content' }}>
           <Grid container direction="column" spacing={1}>
             <Grid item xs={2}>
               <Typography variant="h5" align="center">
@@ -56,14 +59,45 @@ function App() {
               <Box>
                 <Grid container columnSpacing={2} columns={25}>
                   <Grid item xs={12}>
-                    <Stack>
-                      <MqttConfigurator authenticationEnabled={false} />
+                    <Stack spacing={1}>
+                      <Grid container alignItems="center">
+                        <Grid item xs={10}>
+                          <Typography
+                            variant="h6"
+                            align="center"
+                            sx={
+                              !subscribeEnabled
+                                ? {
+                                    color: (theme) =>
+                                      theme.palette.text.disabled,
+                                  }
+                                : {}
+                            }
+                          >
+                            Subscribe
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Switch
+                            onChange={(
+                              event: React.ChangeEvent<HTMLInputElement>
+                            ) => {
+                              setSubscribeEnabled(event.target.checked);
+                            }}
+                          />
+                        </Grid>
+                      </Grid>
+                      <BrokerSettings
+                        authenticationEnabled={false}
+                        disabled={!subscribeEnabled}
+                      />
                       <TextField
                         fullWidth
                         label="Topic"
                         variant="outlined"
                         onChange={handleTextFieldChange}
                         size="small"
+                        disabled={!subscribeEnabled}
                       />
                       <Button
                         fullWidth
@@ -85,7 +119,7 @@ function App() {
                             });
                         }}
                       >
-                        Subscribe
+                        Apply
                       </Button>
                     </Stack>
                   </Grid>
@@ -93,47 +127,64 @@ function App() {
                     <Divider orientation="vertical" variant="middle" />
                   </Grid>
                   <Grid item xs={12}>
-                    <Box>
-                      <Grid container direction="column" spacing={1}>
-                        <Grid item>
-                          <TextField
-                            fullWidth
-                            label="Broker URL"
-                            placeholder="ws://localhost:9001"
-                            variant="outlined"
-                            size="small"
-                          />
-                        </Grid>
-                        <Grid item>
-                          <TextField
-                            fullWidth
-                            label="Topic"
-                            variant="outlined"
-                            size="small"
-                          />
-                        </Grid>
-                        <Grid item>
-                          <Button
-                            sx={{
-                              whiteSpace: 'nowrap',
-                              minWidth: 'max-content',
-                            }}
-                            fullWidth
-                            variant="contained"
-                            onClick={() => {
-                              setCount((count) => count + 1);
-                              browser.runtime.sendMessage({
-                                action: BACKGROUND_ACTION.MQTT_PUBLISH,
-                                topic: topicValue,
-                                content: count,
-                              });
-                            }}
+                    <Stack spacing={1}>
+                      <Grid container alignItems="center">
+                        <Grid item xs={10}>
+                          <Typography
+                            variant="h6"
+                            align="center"
+                            sx={
+                              !publishEnabled
+                                ? {
+                                    color: (theme) =>
+                                      theme.palette.text.disabled,
+                                  }
+                                : {}
+                            }
                           >
-                            Publish {count}
-                          </Button>
+                            Publish
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Switch
+                            onChange={(
+                              event: React.ChangeEvent<HTMLInputElement>
+                            ) => {
+                              setPublishEnabled(event.target.checked);
+                            }}
+                          />
                         </Grid>
                       </Grid>
-                    </Box>
+                      <BrokerSettings
+                        authenticationEnabled={false}
+                        disabled={!publishEnabled}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Topic"
+                        variant="outlined"
+                        onChange={handleTextFieldChange}
+                        size="small"
+                        disabled={!publishEnabled}
+                      />
+                      <Button
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          minWidth: 'max-content',
+                        }}
+                        fullWidth
+                        variant="contained"
+                        onClick={() => {
+                          browser.runtime.sendMessage({
+                            action: BACKGROUND_ACTION.MQTT_PUBLISH,
+                            topic: topicValue,
+                            content: 'count',
+                          });
+                        }}
+                      >
+                        Apply
+                      </Button>
+                    </Stack>
                   </Grid>
                 </Grid>
               </Box>
