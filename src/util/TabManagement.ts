@@ -6,7 +6,7 @@ export enum BACKGROUND_ACTION {
 
 export function getTinkerEnvironmentId(url: string): string {
   if (/https?:\/\/www\.tinkercad\.com\/things\/.*\/editel.*/.test(url)) {
-    return url.split('/')[2];
+    return url.split('/')[4];
   } else {
     return '';
   }

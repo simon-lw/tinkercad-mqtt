@@ -44,11 +44,7 @@ function App() {
     })
     .then((tabs) => {
       const tinkerId = getTinkerEnvironmentId(tabs[0].url?.toString() || '');
-      if (tinkerId) {
-        setTinkerId(tinkerId);
-      } else {
-        console.error('No tinkerId found');
-      }
+      setTinkerId(tinkerId);
       setTabsFetched(true);
     });
 

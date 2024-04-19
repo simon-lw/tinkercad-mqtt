@@ -24,9 +24,15 @@ export default defineManifest(async () => {
     content_scripts: [
       {
         js: ['src/content/index.ts'],
-        matches: ['https://www.tinkercad.com/things/*/editel*'],
+        matches: [
+          'https://www.tinkercad.com/things/*/editel*',
+          'http://www.tinkercad.com/things/*/editel*',
+        ],
       },
     ],
-    host_permissions: ['https://www.tinkercad.com/things/*/editel*'],
+    host_permissions: [
+      'https://www.tinkercad.com/things/*/editel*',
+      'http://www.tinkercad.com/things/*/editel*',
+    ],
   };
 });
