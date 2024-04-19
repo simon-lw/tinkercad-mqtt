@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import browser from 'webextension-polyfill';
 
 import '@fontsource/roboto/300.css';
@@ -6,9 +6,15 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
+// import { MqttSettings } from '../util/MqttSettings';
+import {
+  BACKGROUND_ACTION,
+  getTinkerEnvironmentId,
+} from '../util/TabManagement';
+import BrokerSettings from './BrokerSettings';
+
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { BACKGROUND_ACTION } from '../content';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import {
@@ -20,7 +26,6 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import BrokerSettings from './BrokerSettings';
 
 const isDarkMode =
   window.matchMedia &&
@@ -32,10 +37,38 @@ const theme = createTheme({
 });
 
 function App() {
+  browser.tabs
+    .query({
+      active: true,
+      lastFocusedWindow: true,
+    })
+    .then((tabs) => {
+      const tinkerId = getTinkerEnvironmentId(tabs[0].url?.toString() || '');
+      if (tinkerId) {
+        setTinkerId(tinkerId);
+      } else {
+        console.error('No tinkerId found');
+      }
+      setTabsFetched(true);
+    });
+
+  const [tabsFetched, setTabsFetched] = useState(false);
+  const [tinkerId, setTinkerId] = useState('');
+
+  useEffect(() => {
+    console.log('TinkerId:', tinkerId);
+  }, [tabsFetched]);
+
   const [topicValue, setTopicValue] = useState('');
 
   const [subscribeEnabled, setSubscribeEnabled] = useState(false);
   const [publishEnabled, setPublishEnabled] = useState(false);
+
+  // const [previousSubscribeSettings, setPreviousSubscribeSettings] = useState({
+  //   brokerUrl: '',
+  //   port: 0,
+  //   authenticationEnabled: false,
+  // });
 
   const handleTextFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTopicValue(event.target.value);

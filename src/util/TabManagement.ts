@@ -4,7 +4,10 @@ export enum BACKGROUND_ACTION {
   MQTT_CONFIG_UPDATE,
 }
 
-export function getTinkerEnvironmentId() {
-  const pathArray = window.location.pathname.split('/');
-  return pathArray[2];
+export function getTinkerEnvironmentId(url: string): string {
+  if (/https?:\/\/www\.tinkercad\.com\/things\/.*\/editel.*/.test(url)) {
+    return url.split('/')[2];
+  } else {
+    return '';
+  }
 }

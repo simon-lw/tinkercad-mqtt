@@ -20,7 +20,7 @@ client.on('error', (error) => {
   console.error('Mqtt client error:', error);
 });
 
-const tinkerEnvId = getTinkerEnvironmentId();
+const tinkerEnvId = getTinkerEnvironmentId(window.location.pathname);
 
 browser.runtime.onMessage.addListener((msg) => {
   if (client.connected) {
