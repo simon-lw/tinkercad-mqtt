@@ -78,6 +78,8 @@ export class Serial {
       this.connectObserver();
     });
 
+    console.log('Looking for serial console...');
+
     let interval = setInterval(() => {
       this.serial_output = <HTMLDivElement>(
         Array.from(

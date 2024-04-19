@@ -25,14 +25,14 @@ export default defineManifest(async () => {
       {
         js: ['src/content/index.ts'],
         matches: [
-          'https://www.tinkercad.com/things/*',
-          'http://www.tinkercad.com/things/*',
+          'https://www.tinkercad.com/things/*/editel*',
+          'http://www.tinkercad.com/things/*/editel*',
         ],
       },
     ],
     host_permissions: [
-      'https://www.tinkercad.com/things/*',
-      'http://www.tinkercad.com/things/*',
+      'https://www.tinkercad.com/things/*/editel*',
+      'http://www.tinkercad.com/things/*/editel*',
     ],
   };
 });
