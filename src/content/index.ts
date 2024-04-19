@@ -1,11 +1,10 @@
 import browser from 'webextension-polyfill';
 import { Serial } from './serial';
 import mqtt from 'mqtt';
-
-export enum BACKGROUND_ACTION {
-  MQTT_PUBLISH,
-  MQTT_SUBSCRIBE,
-}
+import {
+  BACKGROUND_ACTION,
+  getTinkerEnvironmentId,
+} from '../util/TabManagement';
 
 const serial = Serial.Instance;
 const brokerUrl = 'ws://localhost';
@@ -21,6 +20,8 @@ client.on('error', (error) => {
   console.error('Mqtt client error:', error);
 });
 
+const tinkerEnvId = getTinkerEnvironmentId();
+
 browser.runtime.onMessage.addListener((msg) => {
   if (client.connected) {
     if (msg.action == BACKGROUND_ACTION.MQTT_PUBLISH) {
@@ -31,6 +32,8 @@ browser.runtime.onMessage.addListener((msg) => {
       client.subscribe(msg.content, (error) => {
         if (error) console.log('Failed subscribing.');
       });
+    } else if (msg.action == BACKGROUND_ACTION.MQTT_CONFIG_UPDATE) {
+      //Todo: change mqtt config ...
     }
   } else {
     console.log('Client is not connected yet, skipping message.');
@@ -39,9 +42,8 @@ browser.runtime.onMessage.addListener((msg) => {
 
 serial.addCallback((serial_data) => {
   if (client.connected) {
-    // send each line of serial output to the background script
     for (let data of serial_data) {
-      client.publish('tinker', String(data));
+      client.publish(tinkerEnvId, String(data));
     }
   }
 });
