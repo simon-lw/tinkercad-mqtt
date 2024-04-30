@@ -7,9 +7,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-// import { MqttSettings } from '../util/MqttSettings';
 import {
-  BACKGROUND_ACTION,
   getTinkerEnvironmentId,
 } from '../util/TabManagement';
 import BrokerSettings from './BrokerSettings';
@@ -29,6 +27,7 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
+import { ISubscriptionRequest } from 'mqtt';
 
 const isDarkMode =
   window.matchMedia &&
@@ -142,12 +141,12 @@ function App() {
                               </Grid>
                             </Grid>
                             <BrokerSettings
-                              brokerUrl={
-                                tabSettings.subscribeBrokerSettings.brokerUrl
+                              hostname={
+                                tabSettings.subscribeBrokerSettings.options.hostname || ''
                               }
-                              topic={tabSettings.subscribeBrokerSettings.topic}
+                              topics={tabSettings.subscribeBrokerSettings.topics.map( subscription => {return subscription.topic})}
                               username={
-                                tabSettings.subscribeBrokerSettings.username
+                                tabSettings.subscribeBrokerSettings.options.username || ''
                               }
                               onAuthenticationEnabledChange={(value) => {
                                 setTabSettings({
@@ -163,16 +162,21 @@ function App() {
                                   ...tabSettings,
                                   subscribeBrokerSettings: {
                                     ...tabSettings.subscribeBrokerSettings,
-                                    brokerUrl: value,
+                                    options: {
+                                      ...tabSettings.subscribeBrokerSettings.options,
+                                      hostname: value
+                                    }
                                   },
                                 });
                               }}
-                              onTopicChange={(value) => {
+                              onTopicsChange={(value) => { //TODO: Split by whitespace or Comma? Rn it is by comma
+                                const newTopics : ISubscriptionRequest[] = value.map( topic => ({topic, qos: 0}));
+                                console.log("New Topics: ", newTopics);
                                 setTabSettings({
                                   ...tabSettings,
                                   subscribeBrokerSettings: {
                                     ...tabSettings.subscribeBrokerSettings,
-                                    topic: value,
+                                    topics: newTopics,
                                   },
                                 });
                               }}
@@ -181,7 +185,10 @@ function App() {
                                   ...tabSettings,
                                   subscribeBrokerSettings: {
                                     ...tabSettings.subscribeBrokerSettings,
-                                    username: value,
+                                    options: {
+                                      ...tabSettings.subscribeBrokerSettings.options,
+                                      username: value,
+                                    }
                                   },
                                 });
                               }}
@@ -227,12 +234,12 @@ function App() {
                               </Grid>
                             </Grid>
                             <BrokerSettings
-                              brokerUrl={
-                                tabSettings.publishBrokerSettings.brokerUrl
+                              hostname={
+                                tabSettings.publishBrokerSettings.options.hostname || ''
                               }
-                              topic={tabSettings.publishBrokerSettings.topic}
+                              topics={tabSettings.publishBrokerSettings.topics.map( element => {return element.topic})}
                               username={
-                                tabSettings.publishBrokerSettings.username
+                                tabSettings.publishBrokerSettings.options.username || ''
                               }
                               onAuthenticationEnabledChange={(value) => {
                                 setTabSettings({
@@ -248,16 +255,21 @@ function App() {
                                   ...tabSettings,
                                   publishBrokerSettings: {
                                     ...tabSettings.publishBrokerSettings,
-                                    brokerUrl: value,
+                                    options: {
+                                      ...tabSettings.publishBrokerSettings.options,
+                                      hostname: value,
+                                    }
                                   },
                                 });
                               }}
-                              onTopicChange={(value) => {
+                              onTopicsChange={(value) => {
+                                const newTopics : ISubscriptionRequest[] = value.map( topic => ({topic, qos: 0}));
+                                console.log("New Topics: ", newTopics);
                                 setTabSettings({
                                   ...tabSettings,
                                   publishBrokerSettings: {
                                     ...tabSettings.publishBrokerSettings,
-                                    topic: value,
+                                    topics: newTopics,
                                   },
                                 });
                               }}
@@ -266,13 +278,15 @@ function App() {
                                   ...tabSettings,
                                   publishBrokerSettings: {
                                     ...tabSettings.publishBrokerSettings,
-                                    username: value,
+                                    options: {
+                                      ...tabSettings.publishBrokerSettings.options,
+                                      username: value,
+                                    }
                                   },
                                 });
                               }}
                               authenticationEnabled={
-                                tabSettings.publishBrokerSettings
-                                  .authenticationEnabled
+                                tabSettings.publishBrokerSettings.authenticationEnabled
                               }
                               disabled={!tabSettings.publishEnabled}
                             />
@@ -295,8 +309,8 @@ function App() {
 
                             if (tabId) {
                               browser.tabs.sendMessage(tabId, {
-                                action: BACKGROUND_ACTION.MQTT_CONFIG_UPDATE,
-                                content: tinkerId,
+                                tabId: tabId,
+                                tabSettings: tabSettings,
                               });
                             }
                           });

@@ -22,12 +22,12 @@ import {
 interface BrokerSettingsProps {
   disabled: boolean;
   authenticationEnabled: boolean;
-  brokerUrl: string;
-  topic: string;
+  hostname: string;
+  topics: string[];
   username: string;
   onAuthenticationEnabledChange: (enabled: boolean) => void;
   onBrokerUrlChange: (brokerUrl: string) => void;
-  onTopicChange: (topic: string) => void;
+  onTopicsChange: (topics: string[]) => void;
   onUsernameChange: (username: string) => void;
 }
 
@@ -51,7 +51,8 @@ function BrokerSettings(props: BrokerSettingsProps) {
   };
 
   const handleTopicChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    props.onTopicChange(event.target.value);
+    const topicsArray = event.target.value.split(',');
+    props.onTopicsChange(topicsArray);
   };
 
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +71,7 @@ function BrokerSettings(props: BrokerSettingsProps) {
             size="small"
             disabled={disabled}
             onChange={handleBrokerUrlChange}
-            value={props.brokerUrl}
+            value={props.hostname}
           />
           <TextField
             fullWidth
@@ -79,7 +80,7 @@ function BrokerSettings(props: BrokerSettingsProps) {
             size="small"
             disabled={disabled}
             onChange={handleTopicChange}
-            value={props.topic}
+            value={props.topics}
           />
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>

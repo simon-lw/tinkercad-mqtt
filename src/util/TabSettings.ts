@@ -1,3 +1,5 @@
+import { IClientOptions, ISubscriptionRequest } from 'mqtt';
+
 export class TabSettings {
   subscribeEnabled: boolean;
   publishEnabled: boolean;
@@ -18,21 +20,19 @@ export class TabSettings {
   }
 }
 
-export class MqttSettings {
-  brokerUrl: string;
-  topic: string;
+class MqttSettings {
+  //TODO: dont need export?
+  options: IClientOptions;
+  topics: ISubscriptionRequest[]; //TODO: Reconsider this type. Maybe define shared Type that has only topic and qos? Rn this variable is used as both publish and subscribe list, even though there are different options for pub or sub topic
   authenticationEnabled: boolean;
-  username: string;
 
   constructor(
-    brokerUrl?: string,
-    topic?: string,
-    authenticationEnabled?: boolean,
-    username?: string
+    options?: IClientOptions,
+    topics?: ISubscriptionRequest[],
+    authenticationEnabled?: boolean
   ) {
-    this.brokerUrl = brokerUrl ?? '';
-    this.topic = topic ?? '';
+    this.options = options ?? {};
+    this.topics = topics ?? [];
     this.authenticationEnabled = authenticationEnabled ?? false;
-    this.username = username ?? '';
   }
 }
