@@ -7,9 +7,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import {
-  getTinkerEnvironmentId,
-} from '../util/TabManagement';
+import { getTinkerEnvironmentId } from '../util/TabManagement';
 import BrokerSettings from './BrokerSettings';
 
 import { TabSettings } from '../util/TabSettings';
@@ -142,11 +140,17 @@ function App() {
                             </Grid>
                             <BrokerSettings
                               hostname={
-                                tabSettings.subscribeBrokerSettings.options.hostname || ''
+                                tabSettings.subscribeBrokerSettings.options
+                                  .hostname || ''
                               }
-                              topics={tabSettings.subscribeBrokerSettings.topics.map( subscription => {return subscription.topic})}
+                              topics={tabSettings.subscribeBrokerSettings.topics.map(
+                                (subscription) => {
+                                  return subscription.topic;
+                                }
+                              )}
                               username={
-                                tabSettings.subscribeBrokerSettings.options.username || ''
+                                tabSettings.subscribeBrokerSettings.options
+                                  .username || ''
                               }
                               onAuthenticationEnabledChange={(value) => {
                                 setTabSettings({
@@ -163,15 +167,18 @@ function App() {
                                   subscribeBrokerSettings: {
                                     ...tabSettings.subscribeBrokerSettings,
                                     options: {
-                                      ...tabSettings.subscribeBrokerSettings.options,
-                                      hostname: value
-                                    }
+                                      ...tabSettings.subscribeBrokerSettings
+                                        .options,
+                                      hostname: value,
+                                    },
                                   },
                                 });
                               }}
-                              onTopicsChange={(value) => { //TODO: Split by whitespace or Comma? Rn it is by comma
-                                const newTopics : ISubscriptionRequest[] = value.map( topic => ({topic, qos: 0}));
-                                console.log("New Topics: ", newTopics);
+                              onTopicsChange={(value) => {
+                                //TODO: Split by whitespace or Comma? Rn it is by comma
+                                const newTopics: ISubscriptionRequest[] =
+                                  value.map((topic) => ({ topic, qos: 0 }));
+                                console.log('New Topics: ', newTopics);
                                 setTabSettings({
                                   ...tabSettings,
                                   subscribeBrokerSettings: {
@@ -186,9 +193,10 @@ function App() {
                                   subscribeBrokerSettings: {
                                     ...tabSettings.subscribeBrokerSettings,
                                     options: {
-                                      ...tabSettings.subscribeBrokerSettings.options,
+                                      ...tabSettings.subscribeBrokerSettings
+                                        .options,
                                       username: value,
-                                    }
+                                    },
                                   },
                                 });
                               }}
@@ -235,11 +243,17 @@ function App() {
                             </Grid>
                             <BrokerSettings
                               hostname={
-                                tabSettings.publishBrokerSettings.options.hostname || ''
+                                tabSettings.publishBrokerSettings.options
+                                  .hostname || ''
                               }
-                              topics={tabSettings.publishBrokerSettings.topics.map( element => {return element.topic})}
+                              topics={tabSettings.publishBrokerSettings.topics.map(
+                                (element) => {
+                                  return element.topic;
+                                }
+                              )}
                               username={
-                                tabSettings.publishBrokerSettings.options.username || ''
+                                tabSettings.publishBrokerSettings.options
+                                  .username || ''
                               }
                               onAuthenticationEnabledChange={(value) => {
                                 setTabSettings({
@@ -256,15 +270,17 @@ function App() {
                                   publishBrokerSettings: {
                                     ...tabSettings.publishBrokerSettings,
                                     options: {
-                                      ...tabSettings.publishBrokerSettings.options,
+                                      ...tabSettings.publishBrokerSettings
+                                        .options,
                                       hostname: value,
-                                    }
+                                    },
                                   },
                                 });
                               }}
                               onTopicsChange={(value) => {
-                                const newTopics : ISubscriptionRequest[] = value.map( topic => ({topic, qos: 0}));
-                                console.log("New Topics: ", newTopics);
+                                const newTopics: ISubscriptionRequest[] =
+                                  value.map((topic) => ({ topic, qos: 0 }));
+                                console.log('New Topics: ', newTopics);
                                 setTabSettings({
                                   ...tabSettings,
                                   publishBrokerSettings: {
@@ -279,14 +295,16 @@ function App() {
                                   publishBrokerSettings: {
                                     ...tabSettings.publishBrokerSettings,
                                     options: {
-                                      ...tabSettings.publishBrokerSettings.options,
+                                      ...tabSettings.publishBrokerSettings
+                                        .options,
                                       username: value,
-                                    }
+                                    },
                                   },
                                 });
                               }}
                               authenticationEnabled={
-                                tabSettings.publishBrokerSettings.authenticationEnabled
+                                tabSettings.publishBrokerSettings
+                                  .authenticationEnabled
                               }
                               disabled={!tabSettings.publishEnabled}
                             />

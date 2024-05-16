@@ -32,8 +32,10 @@ function createClient(options: IClientOptions): MqttClient {
     console.error('Mqtt client error:', error);
   });
   client.on('message', (topic, message) => {
-    if (subscribeEnabled)
+    if (subscribeEnabled) {
       console.log('Received: ', message.toString(), ' on Topic: ', topic);
+      serial.sendToSerial(message.toString());
+    }
   });
   return client;
 }
@@ -95,11 +97,7 @@ function refreshMqttClients(clientOptions: IClientOptions[]) {
 }
 
 browser.runtime.onMessage.addListener((msg) => {
-  if (subscriberClient.connected || publisherClient.connected) {
-    processTabSettings(msg.tabSettings);
-  } else {
-    console.log('Client is not connected yet, skipping message.');
-  }
+  processTabSettings(msg.tabSettings);
 });
 
 serial.addCallback((serial_data) => {
