@@ -23,7 +23,8 @@ let subscribeEnabled = true;
 let publishTopics = [tinkerEnvId];
 let subscribeTopics: ISubscriptionRequest[] = [];
 
-let mqttClient: MqttClient = createClient(defaultOptions);
+let subscriberClient: MqttClient = createClient(defaultOptions);
+let publisherClient: MqttClient = subscriberClient;
 
 function createClient(options: IClientOptions): MqttClient {
   let client = mqtt.connect(options);
@@ -37,7 +38,7 @@ function createClient(options: IClientOptions): MqttClient {
   return client;
 }
 
-function processNewClientConnection(options: IClientOptions) {
+function parseClientOptions(options: IClientOptions): IClientOptions {
   if (options.hostname != null) {
     const { protocol, domain, port, path } = parseUrl(options.hostname);
     options = {
@@ -47,17 +48,8 @@ function processNewClientConnection(options: IClientOptions) {
     };
     const parsedProtocol = parseProtocol(protocol);
     if (parsedProtocol) options.protocol = parsedProtocol;
-    mqttClient.end(() => {
-      console.log(
-        'Closing connection in order to create connection with changed options.'
-      );
-    });
-    console.log('Connecting with new options: ', options);
-    mqttClient = createClient(options);
-    for (let topicOptions of subscribeTopics) {
-      mqttClient.subscribe(topicOptions.topic, { qos: topicOptions.qos });
-    }
   }
+  return options;
 }
 
 function processTabSettings(tabSettings: TabSettings) {
@@ -66,29 +58,55 @@ function processTabSettings(tabSettings: TabSettings) {
   const publisherSettings = tabSettings.publishBrokerSettings;
   const subscriberSettings = tabSettings.subscribeBrokerSettings;
 
-  if (
-    publisherSettings.options.hostname === subscriberSettings.options.hostname
-  ) {
-    publishTopics = publisherSettings.topics.map((element) => element.topic);
-    subscribeTopics = subscriberSettings.topics;
-    processNewClientConnection(subscriberSettings.options);
+  publishTopics = publisherSettings.topics.map((element) => element.topic);
+  subscribeTopics = subscriberSettings.topics;
+
+  let newOptions: IClientOptions[] = [
+    parseClientOptions(subscriberSettings.options),
+  ];
+  if (publisherSettings.options !== subscriberSettings.options) {
+    newOptions.push(parseClientOptions(publisherSettings.options));
+  }
+  refreshMqttClients(newOptions);
+}
+
+function refreshMqttClients(clientOptions: IClientOptions[]) {
+  subscriberClient.end(() => {
+    console.log(
+      'Closing connection in order to create connection with changed options.'
+    );
+  });
+  console.log('Connecting with new options: ', clientOptions[0]);
+  subscriberClient = createClient(clientOptions[0]);
+  for (let topicOptions of subscribeTopics) {
+    subscriberClient.subscribe(topicOptions.topic, { qos: topicOptions.qos });
+  }
+  if (clientOptions.length == 1) {
+    publisherClient = subscriberClient;
+  } else {
+    if (publisherClient.connected)
+      publisherClient.end(() => {
+        console.log(
+          'Closing Publisher connection in order to create connection with changed options.'
+        );
+      });
+    publisherClient = createClient(clientOptions[1]);
   }
 }
 
 browser.runtime.onMessage.addListener((msg) => {
-  if (mqttClient.connected) {
+  if (subscriberClient.connected || publisherClient.connected) {
     processTabSettings(msg.tabSettings);
-    //TODO: If multiple Brokers should be possible, then multiple client instances are needed.
   } else {
     console.log('Client is not connected yet, skipping message.');
   }
 });
 
 serial.addCallback((serial_data) => {
-  if (mqttClient.connected && publishEnabled) {
+  if (publisherClient.connected && publishEnabled) {
     for (let topic of publishTopics) {
       for (let data of serial_data) {
-        mqttClient.publish(topic, String(data));
+        publisherClient.publish(topic, String(data));
       }
     }
   }

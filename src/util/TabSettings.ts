@@ -21,7 +21,6 @@ export class TabSettings {
 }
 
 class MqttSettings {
-  //TODO: dont need export?
   options: IClientOptions;
   topics: ISubscriptionRequest[]; //TODO: Reconsider this type. Maybe define shared Type that has only topic and qos? Rn this variable is used as both publish and subscribe list, even though there are different options for pub or sub topic
   authenticationEnabled: boolean;
