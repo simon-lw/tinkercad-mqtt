@@ -18,46 +18,17 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { MqttSettings } from '../util/MqttSettings';
 
 interface BrokerSettingsProps {
-  disabled: boolean;
-  authenticationEnabled: boolean;
-  hostname: string;
-  topics: string[];
-  username: string;
-  onAuthenticationEnabledChange: (enabled: boolean) => void;
-  onBrokerUrlChange: (brokerUrl: string) => void;
-  onTopicsChange: (topics: string[]) => void;
-  onUsernameChange: (username: string) => void;
+  mqttSettings: MqttSettings;
+  setMqttSettings: (settings: MqttSettings) => void;
 }
 
 function BrokerSettings(props: BrokerSettingsProps) {
-  const disabled = props.disabled;
   const [authenticationEnabled, setAuthenticationEnabled] = useState(
-    props.authenticationEnabled
+    props.mqttSettings.authenticationEnabled
   );
-
-  const handleAuthenticationEnabledChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    props.onAuthenticationEnabledChange(event.target.checked);
-    setAuthenticationEnabled(event.target.checked);
-  };
-
-  const handleBrokerUrlChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    props.onBrokerUrlChange(event.target.value);
-  };
-
-  const handleTopicChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const topicsArray = event.target.value.split(',');
-    props.onTopicsChange(topicsArray);
-  };
-
-  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    props.onUsernameChange(event.target.value);
-  };
 
   return (
     <>
@@ -69,18 +40,47 @@ function BrokerSettings(props: BrokerSettingsProps) {
             placeholder="ws://localhost:9001"
             variant="outlined"
             size="small"
-            disabled={disabled}
-            onChange={handleBrokerUrlChange}
-            value={props.hostname}
+            onChange={(event) => {
+              props.setMqttSettings({
+                ...props.mqttSettings,
+                options: {
+                  ...props.mqttSettings.options,
+                  hostname: event.target.value,
+                },
+              });
+            }}
+            value={props.mqttSettings.options.hostname}
           />
           <TextField
             fullWidth
-            label="Topic"
+            label="Publish Topic"
             variant="outlined"
             size="small"
-            disabled={disabled}
-            onChange={handleTopicChange}
-            value={props.topics}
+            onChange={(event) => {
+              props.setMqttSettings({
+                ...props.mqttSettings,
+                pubTopic: event.target.value,
+              });
+            }}
+            value={props.mqttSettings.pubTopic}
+          />
+          <TextField
+            fullWidth
+            label="Subscribe Topic"
+            variant="outlined"
+            size="small"
+            onChange={(event) => {
+              const newTopics: MqttSettings['subTopics'] = event.target.value
+                .split(',')
+                .map((topic) => ({ topic, qos: 0 }));
+              props.setMqttSettings({
+                ...props.mqttSettings,
+                subTopics: newTopics,
+              });
+            }}
+            value={props.mqttSettings.subTopics.map((element) => {
+              return element.topic;
+            })}
           />
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -94,9 +94,14 @@ function BrokerSettings(props: BrokerSettingsProps) {
                   </Grid>
                   <Grid item xs={2}>
                     <Checkbox
-                      onChange={handleAuthenticationEnabledChange}
+                      onChange={(event) => {
+                        props.setMqttSettings({
+                          ...props.mqttSettings,
+                          authenticationEnabled: event.target.checked,
+                        });
+                        setAuthenticationEnabled(event.target.checked);
+                      }}
                       size="small"
-                      disabled={disabled}
                       checked={authenticationEnabled}
                     />
                   </Grid>
@@ -106,9 +111,17 @@ function BrokerSettings(props: BrokerSettingsProps) {
                   label="Username"
                   variant="outlined"
                   size="small"
-                  disabled={!authenticationEnabled || disabled}
-                  onChange={handleUsernameChange}
-                  value={props.username}
+                  disabled={!authenticationEnabled}
+                  onChange={(event) => {
+                    props.setMqttSettings({
+                      ...props.mqttSettings,
+                      options: {
+                        ...props.mqttSettings.options,
+                        username: event.target.value,
+                      },
+                    });
+                  }}
+                  value={props.mqttSettings.options.username}
                 />
                 <TextField
                   fullWidth
@@ -116,7 +129,7 @@ function BrokerSettings(props: BrokerSettingsProps) {
                   variant="outlined"
                   size="small"
                   type="password"
-                  disabled={!authenticationEnabled || disabled}
+                  disabled={!authenticationEnabled}
                 />
               </Stack>
             </AccordionDetails>

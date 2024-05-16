@@ -2,11 +2,11 @@ import browser from 'webextension-polyfill';
 import { Serial } from './serial';
 import mqtt, { IClientOptions, ISubscriptionRequest, MqttClient } from 'mqtt';
 import {
-  getTinkerEnvironmentId,
+  // getTinkerEnvironmentId,
   parseProtocol,
   parseUrl,
 } from '../util/TabManagement';
-import { TabSettings } from '../util/TabSettings';
+import { MqttSettings } from '../util/MqttSettings';
 
 const serial = Serial.Instance;
 const defaultOptions: IClientOptions = {
@@ -17,10 +17,8 @@ const defaultOptions: IClientOptions = {
   clientId: 'tinkerExtension',
 };
 
-const tinkerEnvId = getTinkerEnvironmentId(window.location.href);
-let publishEnabled = false;
-let subscribeEnabled = true;
-let publishTopics = [tinkerEnvId];
+// const tinkerEnvId = getTinkerEnvironmentId(window.location.href);
+let publishTopic = '';
 let subscribeTopics: ISubscriptionRequest[] = [];
 
 let mqttClient: MqttClient = createClient(defaultOptions);
@@ -31,20 +29,25 @@ function createClient(options: IClientOptions): MqttClient {
     console.error('Mqtt client error:', error);
   });
   client.on('message', (topic, message) => {
-    if (subscribeEnabled)
-      console.log('Received: ', message.toString(), ' on Topic: ', topic);
+    console.log('Received: ', message.toString(), ' on Topic: ', topic);
+    serial.sendToSerial(message.toString());
   });
   return client;
 }
 
 function processNewClientConnection(options: IClientOptions) {
+  console.log('Processing new client connection with options: ', options);
   if (options.hostname != null) {
+    console.log('Options: ', options);
     const { protocol, domain, port, path } = parseUrl(options.hostname);
     options = {
       ...defaultOptions,
       hostname: domain + (path == '/' ? '' : path),
       port: Number(port),
     };
+
+    console.log('Parsed options: ', options);
+
     const parsedProtocol = parseProtocol(protocol);
     if (parsedProtocol) options.protocol = parsedProtocol;
     mqttClient.end(() => {
@@ -60,36 +63,23 @@ function processNewClientConnection(options: IClientOptions) {
   }
 }
 
-function processTabSettings(tabSettings: TabSettings) {
-  publishEnabled = tabSettings.publishEnabled;
-  subscribeEnabled = tabSettings.subscribeEnabled;
-  const publisherSettings = tabSettings.publishBrokerSettings;
-  const subscriberSettings = tabSettings.subscribeBrokerSettings;
+function processTabSettings(mqttSettings: MqttSettings) {
+  console.log('Mqtt Settings: ', mqttSettings);
 
-  if (
-    publisherSettings.options.hostname === subscriberSettings.options.hostname
-  ) {
-    publishTopics = publisherSettings.topics.map((element) => element.topic);
-    subscribeTopics = subscriberSettings.topics;
-    processNewClientConnection(subscriberSettings.options);
-  }
+  // What is this?
+  publishTopic = mqttSettings.pubTopic;
+  subscribeTopics = mqttSettings.subTopics;
+  processNewClientConnection(mqttSettings.options);
 }
 
 browser.runtime.onMessage.addListener((msg) => {
-  if (mqttClient.connected) {
-    processTabSettings(msg.tabSettings);
-    //TODO: If multiple Brokers should be possible, then multiple client instances are needed.
-  } else {
-    console.log('Client is not connected yet, skipping message.');
-  }
+  processTabSettings(msg.tabSettings);
 });
 
 serial.addCallback((serial_data) => {
-  if (mqttClient.connected && publishEnabled) {
-    for (let topic of publishTopics) {
-      for (let data of serial_data) {
-        mqttClient.publish(topic, String(data));
-      }
+  if (mqttClient.connected && publishTopic != '') {
+    for (let data of serial_data) {
+      mqttClient.publish(publishTopic, String(data));
     }
   }
 });
