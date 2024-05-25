@@ -70,17 +70,12 @@ function BrokerSettings(props: BrokerSettingsProps) {
             variant="outlined"
             size="small"
             onChange={(event) => {
-              const newTopics: MqttSettings['subTopics'] = event.target.value
-                .split(',')
-                .map((topic) => ({ topic, qos: 0 }));
               props.setMqttSettings({
                 ...props.mqttSettings,
-                subTopics: newTopics,
+                subTopic: event.target.value,
               });
             }}
-            value={props.mqttSettings.subTopics.map((element) => {
-              return element.topic;
-            })}
+            value={props.mqttSettings.subTopic}
           />
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>

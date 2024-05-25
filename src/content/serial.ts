@@ -3,6 +3,10 @@ export class Serial {
   private ready = false;
   private observer: MutationObserver;
   private callbacks: ((data: string[]) => void)[];
+  private onSimulationStartCallback: (() => void) | undefined;
+  private onSimulationStopCallback: (() => void) | undefined;
+
+  private simulation_button: HTMLAnchorElement | undefined;
 
   private serial_output: HTMLDivElement | undefined;
   private serial_input: HTMLInputElement | undefined;
@@ -66,7 +70,6 @@ export class Serial {
       for (let callback of this.callbacks) {
         callback(serial_data);
       }
-      // console.log(serial_data);
 
       // temporarily disconnect the observer to update the serial output without triggering the observer
       this.disconnectObserver();
@@ -81,6 +84,12 @@ export class Serial {
     console.log('Looking for serial console...');
 
     let interval = setInterval(() => {
+      this.simulation_button = <HTMLAnchorElement>(
+        Array.from(document.getElementsByClassName('js-toggleSimulation')).find(
+          (e) => e instanceof HTMLAnchorElement
+        )
+      );
+
       this.serial_output = <HTMLDivElement>(
         Array.from(
           document.getElementsByClassName('js-code_panel__serial__text')
@@ -112,6 +121,7 @@ export class Serial {
       );
 
       if (
+        this.simulation_button &&
         this.serial_output &&
         this.serial_input &&
         this.serial_send &&
@@ -141,6 +151,18 @@ export class Serial {
           }
         });
 
+        this.simulation_button.onclick = () => {
+          if (this.simulation_button?.classList.contains('active')) {
+            if (this.onSimulationStartCallback) {
+              this.onSimulationStartCallback();
+            }
+          } else {
+            if (this.onSimulationStopCallback) {
+              this.onSimulationStopCallback();
+            }
+          }
+        };
+
         // make sure the serial output is empty
         this.serial_clear.click();
 
@@ -165,6 +187,18 @@ export class Serial {
 
   public addCallback(callback: (data: string[]) => void) {
     this.callbacks.push(callback);
+  }
+
+  public onSimulationStart(callback: () => void) {
+    this.onSimulationStartCallback = callback;
+  }
+
+  public onSimulationStop(callback: () => void) {
+    this.onSimulationStopCallback = callback;
+  }
+
+  public isSimulationActive(): boolean {
+    return this.simulation_button?.classList.contains('active') || false;
   }
 
   public removeCallback(callback: (data: string[]) => void) {
