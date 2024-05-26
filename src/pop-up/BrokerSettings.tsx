@@ -126,6 +126,16 @@ function BrokerSettings(props: BrokerSettingsProps) {
                   size="small"
                   type="password"
                   disabled={!authenticationEnabled}
+                  onChange={(event) => {
+                    props.setMqttSettings({
+                      ...props.mqttSettings,
+                      options: {
+                        ...props.mqttSettings.options,
+                        password: event.target.value,
+                      },
+                    });
+                  }}
+                  value={props.mqttSettings.options.password}
                 />
               </Stack>
             </AccordionDetails>

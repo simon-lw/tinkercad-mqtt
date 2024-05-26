@@ -16,14 +16,12 @@ export function parseUrl(url: string): {
   path: string;
 } {
   const parsedUrl = new URLParse(url);
-  console.log(parsedUrl);
   let result = {
     protocol: parsedUrl.protocol.replace(':', ''),
     domain: parsedUrl.hostname,
     port: parsedUrl.port || '',
     path: parsedUrl.pathname || '/',
   };
-  console.log('Parsed URL: ', result);
   return result;
 }
 

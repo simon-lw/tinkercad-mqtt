@@ -192,6 +192,13 @@ function disconnectClient() {
 }
 
 function processNewClientConnection(mqttSettings: MqttSettings) {
+  console.log('Processing new client connection: ', mqttSettings);
+
+  if (!mqttSettings.authenticationEnabled) {
+    mqttSettings.options.username = undefined;
+    mqttSettings.options.password = undefined;
+  }
+
   publishTopic = mqttSettings.pubTopic;
   subscribeTopic = mqttSettings.subTopic;
   let options = mqttSettings.options;
