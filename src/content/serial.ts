@@ -2,7 +2,7 @@ export class Serial {
   private static _instance: Serial | undefined;
   private ready = false;
   private observer: MutationObserver;
-  private callbacks: ((data: string[]) => void)[];
+  private callbacks: ((data: string) => void)[];
   private onSimulationStartCallback: (() => void) | undefined;
   private onSimulationStopCallback: (() => void) | undefined;
 
@@ -58,17 +58,18 @@ export class Serial {
       // split the serial output by new line and remove empty strings
       let serial_data_split = text.split(/[\r\n]+/g);
 
-      if (serial_data_split.length > 1) {
+      if (serial_data_split.length > 0) {
         serial_data_split[0] = this.last_element_buffer + serial_data_split[0];
       }
 
       this.last_element_buffer = serial_data_split.pop() || '';
 
       let serial_data = serial_data_split.filter((s) => s !== '');
-      console.log(serial_data);
 
-      for (let callback of this.callbacks) {
-        callback(serial_data);
+      for (let data of serial_data) {
+        for (let callback of this.callbacks) {
+          callback(data);
+        }
       }
 
       // temporarily disconnect the observer to update the serial output without triggering the observer
@@ -80,8 +81,6 @@ export class Serial {
       // reconnect the observer
       this.connectObserver();
     });
-
-    console.log('Looking for serial console...');
 
     let interval = setInterval(() => {
       this.simulation_button = <HTMLAnchorElement>(
@@ -128,8 +127,7 @@ export class Serial {
         this.serial_clear &&
         this.serial_graph_toggle
       ) {
-        console.log('Found serial output');
-        // hide the original serial alements and append the new serial elements to their respective parents
+        // hide the original serial elements and append the new serial elements to their respective parents
         this.serial_output.style.display = 'none';
         this.serial_output.before(this.new_serial_output);
 
@@ -185,7 +183,7 @@ export class Serial {
     return this.ready;
   }
 
-  public addCallback(callback: (data: string[]) => void) {
+  public addCallback(callback: (data: string) => void) {
     this.callbacks.push(callback);
   }
 
@@ -201,7 +199,7 @@ export class Serial {
     return this.simulation_button?.classList.contains('active') || false;
   }
 
-  public removeCallback(callback: (data: string[]) => void) {
+  public removeCallback(callback: (data: string) => void) {
     let index = this.callbacks.indexOf(callback);
     if (index > -1) {
       this.callbacks.splice(index, 1);

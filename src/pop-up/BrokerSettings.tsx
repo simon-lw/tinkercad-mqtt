@@ -41,11 +41,12 @@ function BrokerSettings(props: BrokerSettingsProps) {
             variant="outlined"
             size="small"
             onChange={(event) => {
+              const hostname = event.target.value;
               props.setMqttSettings({
                 ...props.mqttSettings,
                 options: {
                   ...props.mqttSettings.options,
-                  hostname: event.target.value,
+                  hostname: hostname != '' ? hostname : undefined,
                 },
               });
             }}
