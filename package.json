@@ -25,6 +25,7 @@
     "mqtt": "^5.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "simple-notify": "^1.0.4",
     "url-parse": "^1.5.10"
   },
   "devDependencies": {

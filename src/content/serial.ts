@@ -2,7 +2,11 @@ export class Serial {
   private static _instance: Serial | undefined;
   private ready = false;
   private observer: MutationObserver;
-  private callbacks: ((data: string[]) => void)[];
+  private callbacks: ((data: string) => void)[];
+  private onSimulationStartCallback: (() => void) | undefined;
+  private onSimulationStopCallback: (() => void) | undefined;
+
+  private simulation_button: HTMLAnchorElement | undefined;
 
   private serial_output: HTMLDivElement | undefined;
   private serial_input: HTMLInputElement | undefined;
@@ -54,19 +58,19 @@ export class Serial {
       // split the serial output by new line and remove empty strings
       let serial_data_split = text.split(/[\r\n]+/g);
 
-      if (serial_data_split.length > 1) {
+      if (serial_data_split.length > 0) {
         serial_data_split[0] = this.last_element_buffer + serial_data_split[0];
       }
 
       this.last_element_buffer = serial_data_split.pop() || '';
 
       let serial_data = serial_data_split.filter((s) => s !== '');
-      console.log(serial_data);
 
-      for (let callback of this.callbacks) {
-        callback(serial_data);
+      for (let data of serial_data) {
+        for (let callback of this.callbacks) {
+          callback(data);
+        }
       }
-      // console.log(serial_data);
 
       // temporarily disconnect the observer to update the serial output without triggering the observer
       this.disconnectObserver();
@@ -78,9 +82,13 @@ export class Serial {
       this.connectObserver();
     });
 
-    console.log('Looking for serial console...');
-
     let interval = setInterval(() => {
+      this.simulation_button = <HTMLAnchorElement>(
+        Array.from(document.getElementsByClassName('js-toggleSimulation')).find(
+          (e) => e instanceof HTMLAnchorElement
+        )
+      );
+
       this.serial_output = <HTMLDivElement>(
         Array.from(
           document.getElementsByClassName('js-code_panel__serial__text')
@@ -112,14 +120,14 @@ export class Serial {
       );
 
       if (
+        this.simulation_button &&
         this.serial_output &&
         this.serial_input &&
         this.serial_send &&
         this.serial_clear &&
         this.serial_graph_toggle
       ) {
-        console.log('Found serial output');
-        // hide the original serial alements and append the new serial elements to their respective parents
+        // hide the original serial elements and append the new serial elements to their respective parents
         this.serial_output.style.display = 'none';
         this.serial_output.before(this.new_serial_output);
 
@@ -140,6 +148,18 @@ export class Serial {
             this.new_serial_output.style.width = '';
           }
         });
+
+        this.simulation_button.onclick = () => {
+          if (this.simulation_button?.classList.contains('active')) {
+            if (this.onSimulationStartCallback) {
+              this.onSimulationStartCallback();
+            }
+          } else {
+            if (this.onSimulationStopCallback) {
+              this.onSimulationStopCallback();
+            }
+          }
+        };
 
         // make sure the serial output is empty
         this.serial_clear.click();
@@ -163,11 +183,23 @@ export class Serial {
     return this.ready;
   }
 
-  public addCallback(callback: (data: string[]) => void) {
+  public addCallback(callback: (data: string) => void) {
     this.callbacks.push(callback);
   }
 
-  public removeCallback(callback: (data: string[]) => void) {
+  public onSimulationStart(callback: () => void) {
+    this.onSimulationStartCallback = callback;
+  }
+
+  public onSimulationStop(callback: () => void) {
+    this.onSimulationStopCallback = callback;
+  }
+
+  public isSimulationActive(): boolean {
+    return this.simulation_button?.classList.contains('active') || false;
+  }
+
+  public removeCallback(callback: (data: string) => void) {
     let index = this.callbacks.indexOf(callback);
     if (index > -1) {
       this.callbacks.splice(index, 1);

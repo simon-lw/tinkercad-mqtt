@@ -7,12 +7,10 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import {
-  getTinkerEnvironmentId,
-} from '../util/TabManagement';
+import { getTinkerEnvironmentId } from '../util/TabManagement';
 import BrokerSettings from './BrokerSettings';
 
-import { TabSettings } from '../util/TabSettings';
+import { MqttSettings } from '../util/MqttSettings';
 
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -24,10 +22,8 @@ import {
   Divider,
   Grid,
   Stack,
-  Switch,
   Typography,
 } from '@mui/material';
-import { ISubscriptionRequest } from 'mqtt';
 
 const isDarkMode =
   window.matchMedia &&
@@ -56,10 +52,11 @@ function App() {
         setTabId(tabs[0].id);
 
         browser.storage.local.get(tinkerId).then((result) => {
-          const settings: TabSettings = result[tinkerId] || new TabSettings();
+          const settings: MqttSettings = result[tinkerId] || new MqttSettings();
+          console.log('Settings: ', settings);
           const tabSettings = { ...settings };
           const previousTabSettings = { ...settings };
-          setTabSettings(tabSettings);
+          setMqttSettings(tabSettings);
           setPreviousTabSettings(previousTabSettings);
           setTabsFetched(true);
         });
@@ -70,22 +67,24 @@ function App() {
   const [tinkerId, setTinkerId] = useState('');
   const [tabId, setTabId] = useState<number | undefined>(undefined);
 
-  const [tabSettings, setTabSettings] = useState(new TabSettings());
-  const [previousTabSettings, setPreviousTabSettings] = useState(
-    new TabSettings()
+  const [mqttSettings, setMqttSettings] = useState(new MqttSettings());
+  const [previousMqttSettings, setPreviousTabSettings] = useState(
+    new MqttSettings()
   );
 
   const [changeDetected, setChangeDetected] = useState(false);
 
   useEffect(() => {
     if (tabsFetched) {
-      if (isEqual(tabSettings, previousTabSettings)) {
+      if (isEqual(mqttSettings, previousMqttSettings)) {
         setChangeDetected(false);
       } else {
         setChangeDetected(true);
       }
     }
-  }, [tabSettings]);
+  }, [mqttSettings]);
+
+  console.log('TabSettings: ', mqttSettings);
 
   return (
     <>
@@ -106,193 +105,12 @@ function App() {
                 <>
                   <Grid item xs={7}>
                     <Box>
-                      <Grid container columnSpacing={2} columns={25}>
-                        <Grid item xs={12}>
-                          <Stack spacing={1}>
-                            <Grid container alignItems="center">
-                              <Grid item xs={10}>
-                                <Typography
-                                  variant="h6"
-                                  align="center"
-                                  sx={
-                                    !tabSettings.subscribeEnabled
-                                      ? {
-                                          color: (theme) =>
-                                            theme.palette.text.disabled,
-                                        }
-                                      : {}
-                                  }
-                                >
-                                  Subscribe
-                                </Typography>
-                              </Grid>
-                              <Grid item xs={2}>
-                                <Switch
-                                  defaultChecked={tabSettings.subscribeEnabled}
-                                  onChange={(
-                                    event: React.ChangeEvent<HTMLInputElement>
-                                  ) => {
-                                    setTabSettings({
-                                      ...tabSettings,
-                                      subscribeEnabled: event.target.checked,
-                                    });
-                                  }}
-                                />
-                              </Grid>
-                            </Grid>
-                            <BrokerSettings
-                              hostname={
-                                tabSettings.subscribeBrokerSettings.options.hostname || ''
-                              }
-                              topics={tabSettings.subscribeBrokerSettings.topics.map( subscription => {return subscription.topic})}
-                              username={
-                                tabSettings.subscribeBrokerSettings.options.username || ''
-                              }
-                              onAuthenticationEnabledChange={(value) => {
-                                setTabSettings({
-                                  ...tabSettings,
-                                  subscribeBrokerSettings: {
-                                    ...tabSettings.subscribeBrokerSettings,
-                                    authenticationEnabled: value,
-                                  },
-                                });
-                              }}
-                              onBrokerUrlChange={(value) => {
-                                setTabSettings({
-                                  ...tabSettings,
-                                  subscribeBrokerSettings: {
-                                    ...tabSettings.subscribeBrokerSettings,
-                                    options: {
-                                      ...tabSettings.subscribeBrokerSettings.options,
-                                      hostname: value
-                                    }
-                                  },
-                                });
-                              }}
-                              onTopicsChange={(value) => { //TODO: Split by whitespace or Comma? Rn it is by comma
-                                const newTopics : ISubscriptionRequest[] = value.map( topic => ({topic, qos: 0}));
-                                console.log("New Topics: ", newTopics);
-                                setTabSettings({
-                                  ...tabSettings,
-                                  subscribeBrokerSettings: {
-                                    ...tabSettings.subscribeBrokerSettings,
-                                    topics: newTopics,
-                                  },
-                                });
-                              }}
-                              onUsernameChange={(value) => {
-                                setTabSettings({
-                                  ...tabSettings,
-                                  subscribeBrokerSettings: {
-                                    ...tabSettings.subscribeBrokerSettings,
-                                    options: {
-                                      ...tabSettings.subscribeBrokerSettings.options,
-                                      username: value,
-                                    }
-                                  },
-                                });
-                              }}
-                              authenticationEnabled={false}
-                              disabled={!tabSettings.subscribeEnabled}
-                            />
-                          </Stack>
-                        </Grid>
-                        <Grid item xs={1}>
-                          <Divider orientation="vertical" variant="middle" />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Stack spacing={1}>
-                            <Grid container alignItems="center">
-                              <Grid item xs={10}>
-                                <Typography
-                                  variant="h6"
-                                  align="center"
-                                  sx={
-                                    !tabSettings.publishEnabled
-                                      ? {
-                                          color: (theme) =>
-                                            theme.palette.text.disabled,
-                                        }
-                                      : {}
-                                  }
-                                >
-                                  Publish
-                                </Typography>
-                              </Grid>
-                              <Grid item xs={2}>
-                                <Switch
-                                  defaultChecked={tabSettings.publishEnabled}
-                                  onChange={(
-                                    event: React.ChangeEvent<HTMLInputElement>
-                                  ) => {
-                                    setTabSettings({
-                                      ...tabSettings,
-                                      publishEnabled: event.target.checked,
-                                    });
-                                  }}
-                                />
-                              </Grid>
-                            </Grid>
-                            <BrokerSettings
-                              hostname={
-                                tabSettings.publishBrokerSettings.options.hostname || ''
-                              }
-                              topics={tabSettings.publishBrokerSettings.topics.map( element => {return element.topic})}
-                              username={
-                                tabSettings.publishBrokerSettings.options.username || ''
-                              }
-                              onAuthenticationEnabledChange={(value) => {
-                                setTabSettings({
-                                  ...tabSettings,
-                                  publishBrokerSettings: {
-                                    ...tabSettings.publishBrokerSettings,
-                                    authenticationEnabled: value,
-                                  },
-                                });
-                              }}
-                              onBrokerUrlChange={(value) => {
-                                setTabSettings({
-                                  ...tabSettings,
-                                  publishBrokerSettings: {
-                                    ...tabSettings.publishBrokerSettings,
-                                    options: {
-                                      ...tabSettings.publishBrokerSettings.options,
-                                      hostname: value,
-                                    }
-                                  },
-                                });
-                              }}
-                              onTopicsChange={(value) => {
-                                const newTopics : ISubscriptionRequest[] = value.map( topic => ({topic, qos: 0}));
-                                console.log("New Topics: ", newTopics);
-                                setTabSettings({
-                                  ...tabSettings,
-                                  publishBrokerSettings: {
-                                    ...tabSettings.publishBrokerSettings,
-                                    topics: newTopics,
-                                  },
-                                });
-                              }}
-                              onUsernameChange={(value) => {
-                                setTabSettings({
-                                  ...tabSettings,
-                                  publishBrokerSettings: {
-                                    ...tabSettings.publishBrokerSettings,
-                                    options: {
-                                      ...tabSettings.publishBrokerSettings.options,
-                                      username: value,
-                                    }
-                                  },
-                                });
-                              }}
-                              authenticationEnabled={
-                                tabSettings.publishBrokerSettings.authenticationEnabled
-                              }
-                              disabled={!tabSettings.publishEnabled}
-                            />
-                          </Stack>
-                        </Grid>
-                      </Grid>
+                      <Stack spacing={1}>
+                        <BrokerSettings
+                          mqttSettings={mqttSettings}
+                          setMqttSettings={setMqttSettings}
+                        />
+                      </Stack>
                     </Box>
                   </Grid>
                   <Grid item xs={2}>
@@ -302,15 +120,15 @@ function App() {
                       disabled={!changeDetected}
                       onClick={() => {
                         browser.storage.local
-                          .set({ [tinkerId]: tabSettings })
+                          .set({ [tinkerId]: mqttSettings })
                           .then(() => {
-                            setPreviousTabSettings({ ...tabSettings });
+                            setPreviousTabSettings({ ...mqttSettings });
                             setChangeDetected(false);
 
                             if (tabId) {
                               browser.tabs.sendMessage(tabId, {
                                 tabId: tabId,
-                                tabSettings: tabSettings,
+                                tabSettings: mqttSettings,
                               });
                             }
                           });
