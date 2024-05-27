@@ -7,11 +7,6 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import { getTinkerEnvironmentId } from '../util/TabManagement';
-import BrokerSettings from './BrokerSettings';
-
-import { MqttSettings } from '../util/MqttSettings';
-
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -24,6 +19,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { MqttSettings } from '../util/MqttSettings';
+import { getTinkerEnvironmentId } from '../util/TabManagement';
+import BrokerSettings from './BrokerSettings';
 
 const isDarkMode =
   window.matchMedia &&
@@ -83,8 +81,6 @@ function App() {
       }
     }
   }, [mqttSettings]);
-
-  console.log('TabSettings: ', mqttSettings);
 
   return (
     <>

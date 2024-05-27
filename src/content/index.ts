@@ -1,5 +1,4 @@
 import browser from 'webextension-polyfill';
-import { Serial } from './serial';
 
 import Notify from 'simple-notify';
 import 'simple-notify/dist/simple-notify.css';
@@ -11,6 +10,7 @@ import {
   parseUrl,
 } from '../util/TabManagement';
 import { MqttSettings } from '../util/MqttSettings';
+import { Serial } from './serial';
 
 const tinkerEnvId = getTinkerEnvironmentId(window.location.href);
 
